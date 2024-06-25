@@ -1,18 +1,27 @@
 package co.edu.poligran.client.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import co.edu.poligran.client.SocketClient;
 import co.edu.poligran.client.controllers.employeeDataHandler.*;
 import co.edu.poligran.client.dtos.Request;
+import co.edu.poligran.client.dtos.SearchResponse;
 import co.edu.poligran.domain.Employee;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class InteractiveController {
     private final SocketClient socketClient;
 
+    private final ObjectMapper objectMapper;
+
     private String firstLevel;
+
+    private String secondLevel;
 
     private Employee employee;
 
@@ -20,6 +29,7 @@ public class InteractiveController {
 
     public InteractiveController(SocketClient socketClient) {
         this.socketClient = socketClient;
+        this.objectMapper = new ObjectMapper();
     }
 
     public void run() throws IOException {
@@ -39,6 +49,7 @@ public class InteractiveController {
 
             if (message.equals("9")) {
                 firstLevel = null;
+                secondLevel = null;
                 initialMessage();
                 continue;
             }
@@ -46,13 +57,11 @@ public class InteractiveController {
             if (firstLevel == null) {
                 firstLevel = message;
             }
-            System.out.println("**** DEBUG **** Message received: " + message + " first level: " + firstLevel);
+
             switch (firstLevel) {
                 case "1" -> insertEmployee(message);
-                case "2" -> System.out.println("get employee");
+                case "2" -> getEmployee(message);
             }
-
-            // System.out.println(socketClient.sendMessage(message));
         }
     }
 
@@ -85,7 +94,6 @@ public class InteractiveController {
 
         if (isFinished) {
             Request<Object> request = Request.builder().requestType("CreateEmployee").data(employee).build();
-            ObjectMapper objectMapper = new ObjectMapper();
             String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
 
             if (!result.equals("employee_created")) {
@@ -106,5 +114,55 @@ public class InteractiveController {
                     0. Salir.
                 """);
         }
+    }
+
+    private void getEmployee(String message) throws IOException {
+        if (secondLevel == null || secondLevel.equals("1")) {
+            Request<Object> request = Request.builder().requestType("SearchEmployee").build();
+            String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
+            SearchResponse searchResponse = objectMapper.readValue(result, SearchResponse.class);
+            List<Employee> employees = objectMapper.readValue(objectMapper.treeAsTokens(searchResponse.getResult()), new TypeReference<>() {
+            });
+            System.out.println("> La lista de empleados es el siguiente:");
+
+            employees.forEach(employee -> {
+                String data = String.format("""
+                            - \033[1m %s %s \033[0m
+                                Puesto: %s
+                                Código de empleado: %s
+                                Correo electrónico: %s
+                                Fecha de nacimiento: %s
+                                Salario: %s
+                        """,
+                        employee.getName(),
+                        employee.getSurname(),
+                        employee.getJobTitle(),
+                        employee.getId(),
+                        employee.getEmail(),
+                        employee.getDateOfBirth(),
+                        employee.getSalary()
+                );
+                System.out.println(data);
+            });
+
+            secondLevel = "1";
+
+            System.out.println("""
+                > Ingresa el número de las siguientes opciones:
+                    1. Listar empleados.
+                    2. Editar un empleado.
+                    3. Eliminar un empleado.
+
+                    9. Volver al menú principal.
+                    0. Salir.
+                """);
+        }
+
+        // TODO: print employees
+        // TODO: print menu
+    }
+
+    private void listEmployees() {
+        System.out.println("list employees");
     }
 }
