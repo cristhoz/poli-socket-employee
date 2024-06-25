@@ -5,7 +5,7 @@ import co.edu.poligran.domain.Employee;
 public class EmployeeSurnameHandler extends EmployeeDataHandler {
     @Override
     public void printQuestion() {
-        System.out.println("Ingrese el apellido:");
+        System.out.println("> Ingrese el apellido:");
     }
 
     @Override

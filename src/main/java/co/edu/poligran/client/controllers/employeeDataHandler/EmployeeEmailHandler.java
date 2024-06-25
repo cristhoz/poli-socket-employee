@@ -5,7 +5,7 @@ import co.edu.poligran.domain.Employee;
 public class EmployeeEmailHandler extends EmployeeDataHandler {
     @Override
     public void printQuestion() {
-        System.out.println("Ingrese el correo electrónico:");
+        System.out.println("> Ingrese el correo electrónico:");
     }
 
     @Override

@@ -7,8 +7,8 @@ public class EmployeeNameHandler extends EmployeeDataHandler {
 
     @Override
     public void printQuestion() {
-        System.out.println("Proporciona la información del empleado:");
-        System.out.println("Ingresa el nombre:");
+        System.out.println("> Proporciona la información del empleado.");
+        System.out.println("> Ingresa el nombre:");
         isPrintedMessage = true;
     }
 

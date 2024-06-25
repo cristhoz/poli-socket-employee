@@ -5,7 +5,7 @@ import co.edu.poligran.domain.Employee;
 public class EmployeeDateOfBirthHandler extends EmployeeDataHandler {
     @Override
     public void printQuestion() {
-        System.out.println("Ingrese la fecha de nacimiento (aaaa-mm-dd):");
+        System.out.println("> Ingrese la fecha de nacimiento (aaaa-mm-dd):");
     }
 
     @Override

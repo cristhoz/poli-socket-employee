@@ -13,6 +13,6 @@ public class CreateEmployeeService {
     public String create(Employee employee) {
         employeeRepository.save(employee);
 
-        return "Employee created";
+        return "employee_created";
     }
 }

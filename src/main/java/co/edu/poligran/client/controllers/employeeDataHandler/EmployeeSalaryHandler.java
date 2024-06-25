@@ -5,7 +5,7 @@ import co.edu.poligran.domain.Employee;
 public class EmployeeSalaryHandler extends EmployeeDataHandler {
     @Override
     public void printQuestion() {
-        System.out.println("Ingrese el salario:");
+        System.out.println("> Ingrese el salario:");
     }
 
     @Override

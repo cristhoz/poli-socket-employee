@@ -37,6 +37,12 @@ public class InteractiveController {
                 break;
             }
 
+            if (message.equals("9")) {
+                firstLevel = null;
+                initialMessage();
+                continue;
+            }
+
             if (firstLevel == null) {
                 firstLevel = message;
             }
@@ -80,7 +86,25 @@ public class InteractiveController {
         if (isFinished) {
             Request<Object> request = Request.builder().requestType("CreateEmployee").data(employee).build();
             ObjectMapper objectMapper = new ObjectMapper();
-            System.out.println(socketClient.sendMessage(objectMapper.writeValueAsString(request)));
+            String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
+
+            if (!result.equals("employee_created")) {
+                System.out.println("Error al crear el empleado");
+                socketClient.stopConnection();
+                return;
+            }
+
+            employee = null;
+            employeeDataHandler = null;
+
+            System.out.println("""
+                > Empleado creado con éxito.
+                > Ingresa el número de las siguientes opciones:
+                    1. Crear otro empleado.
+
+                    9. Volver al menú principal.
+                    0. Salir.
+                """);
         }
     }
 }
