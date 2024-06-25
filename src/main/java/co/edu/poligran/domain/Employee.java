@@ -16,4 +16,7 @@ public class Employee {
     private String email;
     private String dateOfBirth;
     private Integer salary;
+    private String jobTitle;
+    private String createdAt;
+    private String updatedAt;
 }
