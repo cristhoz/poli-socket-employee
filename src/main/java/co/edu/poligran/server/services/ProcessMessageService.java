@@ -2,19 +2,26 @@ package co.edu.poligran.server.services;
 
 import co.edu.poligran.domain.Employee;
 import co.edu.poligran.server.dtos.GenericRequest;
+import co.edu.poligran.server.dtos.SearchResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class ProcessMessageService {
-    ObjectMapper objectMapper;
-    CreateEmployeeService createEmployeeService;
+    private final ObjectMapper objectMapper;
+
+    private final CreateEmployeeService createEmployeeService;
+
+    private final SearchEmployeeService searchEmployeeService;
 
     public ProcessMessageService(
-            ObjectMapper objectMapper,
-            CreateEmployeeService createEmployeeService
+            CreateEmployeeService createEmployeeService,
+            SearchEmployeeService searchEmployeeService
     ) {
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
         this.createEmployeeService = createEmployeeService;
+        this.searchEmployeeService = searchEmployeeService;
     }
 
     public String process(String message) throws JsonProcessingException {
@@ -29,7 +36,11 @@ public class ProcessMessageService {
             }
             case "UpdateEmployee" -> System.out.println("Update employee request");
             case "DeleteEmployee" -> System.out.println("Delete employee request");
-            case "GetEmployee" -> System.out.println("Get employee request");
+            case "SearchEmployee" -> {
+                SearchResponse<Employee> result = this.searchEmployeeService.search();
+
+                response = objectMapper.writeValueAsString(result);
+            }
             default -> response = "Error: Unknown request";
         }
 

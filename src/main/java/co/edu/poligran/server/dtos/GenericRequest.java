@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GenericRequest {
     private String requestType;
-
     private JsonNode data;
 }
