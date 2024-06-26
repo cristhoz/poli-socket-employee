@@ -15,15 +15,19 @@ public class ProcessMessageService {
 
     private final UpdateEmployeeService updateEmployeeService;
 
+    private final DeleteEmployeeService deleteEmployeeService;
+
     public ProcessMessageService(
             CreateEmployeeService createEmployeeService,
             SearchEmployeeService searchEmployeeService,
-            UpdateEmployeeService updateEmployeeService
+            UpdateEmployeeService updateEmployeeService,
+            DeleteEmployeeService deleteEmployeeService
     ) {
         this.objectMapper = new ObjectMapper();
         this.createEmployeeService = createEmployeeService;
         this.searchEmployeeService = searchEmployeeService;
         this.updateEmployeeService = updateEmployeeService;
+        this.deleteEmployeeService = deleteEmployeeService;
     }
 
     public String process(String message) throws JsonProcessingException {
@@ -41,7 +45,11 @@ public class ProcessMessageService {
 
                 response = this.updateEmployeeService.update(employee);
             }
-            case "DeleteEmployee" -> System.out.println("Delete employee request");
+            case "DeleteEmployee" -> {
+                Employee employee = objectMapper.treeToValue(genericRequest.getData(), Employee.class);
+
+                response = this.deleteEmployeeService.delete(employee.getId());
+            }
             case "SearchEmployee" -> {
                 SearchResponse<Employee> result = this.searchEmployeeService.search();
 

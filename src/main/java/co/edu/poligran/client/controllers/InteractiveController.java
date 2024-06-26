@@ -1,7 +1,6 @@
 package co.edu.poligran.client.controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -10,7 +9,6 @@ import co.edu.poligran.client.controllers.employeeDataHandler.*;
 import co.edu.poligran.client.dtos.Request;
 import co.edu.poligran.client.dtos.SearchResponse;
 import co.edu.poligran.domain.Employee;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -118,7 +116,6 @@ public class InteractiveController {
     }
 
     private void getEmployee(String message) throws IOException {
-        System.out.println(secondLevel + "  -----  " + message);
         if (secondLevel == null || (secondLevel.equals("1") && message.equals("1"))) {
             Request<Object> request = Request.builder().requestType("SearchEmployee").build();
             String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
@@ -159,7 +156,7 @@ public class InteractiveController {
 
         switch (secondLevel) {
             case "2" -> modifyEmployee(message);
-            case "3" -> modifyEmployee(message);
+            case "3" -> deleteEmployee(message);
         }
     }
 
@@ -205,6 +202,38 @@ public class InteractiveController {
             secondLevel = null;
 
             System.out.println("> Empleado actualizado con éxito.");
+            printListEmployeesMessage();
+        }
+    }
+
+    private void deleteEmployee(String message) throws IOException {
+        if (employeeDataHandler == null && employee == null) {
+            employee = Employee.builder().build();
+            employeeDataHandler = EmployeeDataHandler.link(
+                    new EmployeeIdHandler()
+            );
+
+            System.out.println("> Proporciona la información del empleado a eliminar.");
+        }
+
+        assert employeeDataHandler != null;
+        boolean isFinished = employeeDataHandler.handle(employee, message);
+
+        if (isFinished) {
+            Request<Object> request = Request.builder().requestType("DeleteEmployee").data(employee).build();
+            String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
+
+            if (!result.equals("employee_deleted")) {
+                System.out.println("Error al eliminar el empleado");
+                socketClient.stopConnection();
+                return;
+            }
+
+            employee = null;
+            employeeDataHandler = null;
+            secondLevel = null;
+
+            System.out.println("> Empleado eliminado con éxito.");
             printListEmployeesMessage();
         }
     }

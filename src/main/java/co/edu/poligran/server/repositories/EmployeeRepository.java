@@ -16,8 +16,8 @@ public class EmployeeRepository {
 
     public void save(Employee employee) {
         String query = """
-            INSERT INTO employees (name, surname, email, date_of_birth, salary, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, now(), now())
+            INSERT INTO employees (name, surname, email, date_of_birth, job_title, salary, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, now(), now())
         """;
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -25,7 +25,8 @@ public class EmployeeRepository {
             statement.setString(2, employee.getSurname());
             statement.setString(3, employee.getEmail());
             statement.setString(4, employee.getDateOfBirth());
-            statement.setInt(5, employee.getSalary());
+            statement.setString(5, employee.getJobTitle());
+            statement.setInt(6, employee.getSalary());
             statement.executeUpdate();
         } catch (Exception e) {
             System.out.println("Error saving employee: " + e.getMessage());
@@ -64,6 +65,38 @@ public class EmployeeRepository {
         return employees;
     }
 
+    public Employee findById(int id) {
+        String query = """
+            SELECT * FROM employees
+            WHERE id = ?
+        """;
+
+        Employee employee = null;
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
+            ResultSet result = statement.executeQuery();
+
+            if (result.next()) {
+                employee = Employee.builder()
+                        .id(result.getInt("id"))
+                        .name(result.getString("name"))
+                        .surname(result.getString("surname"))
+                        .email(result.getString("email"))
+                        .dateOfBirth(result.getString("date_of_birth"))
+                        .salary(result.getInt("salary"))
+                        .jobTitle(result.getString("job_title"))
+                        .createdAt(result.getString("created_at"))
+                        .updatedAt(result.getString("created_at"))
+                        .build();
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting employee: " + e.getMessage());
+        }
+
+        return employee;
+    }
+
     public void update(Employee employee) {
         String query = """
             UPDATE employees
@@ -77,7 +110,21 @@ public class EmployeeRepository {
             statement.setInt(3, employee.getId());
             statement.executeUpdate();
         } catch (Exception e) {
-            System.out.println("Error saving employee: " + e.getMessage());
+            System.out.println("Error updating employee: " + e.getMessage());
+        }
+    }
+
+    public void delete(int id) {
+        String query = """
+            DELETE FROM employees
+            WHERE id = ?
+        """;
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
+            statement.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Error deleting employee: " + e.getMessage());
         }
     }
 }
