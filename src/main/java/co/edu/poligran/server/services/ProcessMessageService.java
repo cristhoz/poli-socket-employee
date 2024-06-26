@@ -5,7 +5,6 @@ import co.edu.poligran.server.dtos.GenericRequest;
 import co.edu.poligran.server.dtos.SearchResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class ProcessMessageService {
     private final ObjectMapper objectMapper;
@@ -14,14 +13,17 @@ public class ProcessMessageService {
 
     private final SearchEmployeeService searchEmployeeService;
 
+    private final UpdateEmployeeService updateEmployeeService;
+
     public ProcessMessageService(
             CreateEmployeeService createEmployeeService,
-            SearchEmployeeService searchEmployeeService
+            SearchEmployeeService searchEmployeeService,
+            UpdateEmployeeService updateEmployeeService
     ) {
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
         this.createEmployeeService = createEmployeeService;
         this.searchEmployeeService = searchEmployeeService;
+        this.updateEmployeeService = updateEmployeeService;
     }
 
     public String process(String message) throws JsonProcessingException {
@@ -34,7 +36,11 @@ public class ProcessMessageService {
 
                 response = this.createEmployeeService.create(employee);
             }
-            case "UpdateEmployee" -> System.out.println("Update employee request");
+            case "UpdateEmployee" -> {
+                Employee employee = objectMapper.treeToValue(genericRequest.getData(), Employee.class);
+
+                response = this.updateEmployeeService.update(employee);
+            }
             case "DeleteEmployee" -> System.out.println("Delete employee request");
             case "SearchEmployee" -> {
                 SearchResponse<Employee> result = this.searchEmployeeService.search();

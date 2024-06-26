@@ -2,12 +2,12 @@ package co.edu.poligran.client.controllers.employeeDataHandler;
 
 import co.edu.poligran.domain.Employee;
 
-public class EmployeeDateOfBirthHandler extends EmployeeDataHandler {
+public class EmployeeJobTitleHandler extends EmployeeDataHandler {
     private boolean isPrintedMessage = false;
 
     @Override
     public void printQuestion() {
-        System.out.println("> Ingrese la fecha de nacimiento (aaaa-mm-dd):");
+        System.out.println("> Ingrese el puesto:");
         isPrintedMessage = true;
     }
 
@@ -18,8 +18,8 @@ public class EmployeeDateOfBirthHandler extends EmployeeDataHandler {
             return false;
         }
 
-        if (employee.getDateOfBirth() == null) {
-            employee.setDateOfBirth(message);
+        if (employee.getJobTitle() == null) {
+            employee.setJobTitle(message);
 
             if (next != null) {
                 next.printQuestion();

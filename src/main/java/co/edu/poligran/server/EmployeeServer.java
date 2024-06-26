@@ -5,6 +5,7 @@ import co.edu.poligran.server.repositories.EmployeeRepository;
 import co.edu.poligran.server.services.CreateEmployeeService;
 import co.edu.poligran.server.services.ProcessMessageService;
 import co.edu.poligran.server.services.SearchEmployeeService;
+import co.edu.poligran.server.services.UpdateEmployeeService;
 
 import java.io.IOException;
 
@@ -14,9 +15,11 @@ public class EmployeeServer {
         EmployeeRepository employeeRepository = new EmployeeRepository(databaseClient.getConnection());
         CreateEmployeeService createEmployeeService = new CreateEmployeeService(employeeRepository);
         SearchEmployeeService searchEmployeeService = new SearchEmployeeService(employeeRepository);
+        UpdateEmployeeService updateEmployeeService = new UpdateEmployeeService(employeeRepository);
         ProcessMessageService processMessageService = new ProcessMessageService(
                 createEmployeeService,
-                searchEmployeeService
+                searchEmployeeService,
+                updateEmployeeService
         );
 
         SocketServer server = new SocketServer();

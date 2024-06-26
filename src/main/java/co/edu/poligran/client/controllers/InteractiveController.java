@@ -69,27 +69,28 @@ public class InteractiveController {
         System.out.println("""
                 > Ingresa el número de las siguientes opciones:
                     1. Insertar un nuevo empleado.
-                    2. Consultar un empleado.
+                    2. Listar empleados.
 
                     0. Salir.
                 """);
     }
 
     private void insertEmployee(String message) throws IOException {
-        if (employee == null) {
+        if (employeeDataHandler == null && employee == null) {
             employee = Employee.builder().build();
-        }
-
-        if (employeeDataHandler == null) {
             employeeDataHandler = EmployeeDataHandler.link(
                     new EmployeeNameHandler(),
                     new EmployeeSurnameHandler(),
                     new EmployeeEmailHandler(),
                     new EmployeeDateOfBirthHandler(),
+                    new EmployeeJobTitleHandler(),
                     new EmployeeSalaryHandler()
             );
+
+            System.out.println("> Proporciona la información del empleado.");
         }
 
+        assert employeeDataHandler != null;
         boolean isFinished = employeeDataHandler.handle(employee, message);
 
         if (isFinished) {
@@ -117,7 +118,8 @@ public class InteractiveController {
     }
 
     private void getEmployee(String message) throws IOException {
-        if (secondLevel == null || secondLevel.equals("1")) {
+        System.out.println(secondLevel + "  -----  " + message);
+        if (secondLevel == null || (secondLevel.equals("1") && message.equals("1"))) {
             Request<Object> request = Request.builder().requestType("SearchEmployee").build();
             String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
             SearchResponse searchResponse = objectMapper.readValue(result, SearchResponse.class);
@@ -146,23 +148,64 @@ public class InteractiveController {
             });
 
             secondLevel = "1";
+            this.printListEmployeesMessage();
 
-            System.out.println("""
+            return;
+        }
+
+        if (secondLevel.equals("1")) {
+            secondLevel = message;
+        }
+
+        switch (secondLevel) {
+            case "2" -> modifyEmployee(message);
+            case "3" -> modifyEmployee(message);
+        }
+    }
+
+    private void printListEmployeesMessage() {
+        System.out.println("""
                 > Ingresa el número de las siguientes opciones:
                     1. Listar empleados.
-                    2. Editar un empleado.
+                    2. Cambiar un empleado.
                     3. Eliminar un empleado.
 
                     9. Volver al menú principal.
                     0. Salir.
                 """);
-        }
-
-        // TODO: print employees
-        // TODO: print menu
     }
 
-    private void listEmployees() {
-        System.out.println("list employees");
+    private void modifyEmployee(String message) throws IOException {
+        if (employeeDataHandler == null && employee == null) {
+            employee = Employee.builder().build();
+            employeeDataHandler = EmployeeDataHandler.link(
+                    new EmployeeIdHandler(),
+                    new EmployeeJobTitleHandler(),
+                    new EmployeeSalaryHandler()
+            );
+
+            System.out.println("> Proporciona la información del empleado a modificar.");
+        }
+
+        assert employeeDataHandler != null;
+        boolean isFinished = employeeDataHandler.handle(employee, message);
+
+        if (isFinished) {
+            Request<Object> request = Request.builder().requestType("UpdateEmployee").data(employee).build();
+            String result = socketClient.sendMessage(objectMapper.writeValueAsString(request));
+
+            if (!result.equals("employee_updated")) {
+                System.out.println("Error al actualizar el empleado");
+                socketClient.stopConnection();
+                return;
+            }
+
+            employee = null;
+            employeeDataHandler = null;
+            secondLevel = null;
+
+            System.out.println("> Empleado actualizado con éxito.");
+            printListEmployeesMessage();
+        }
     }
 }

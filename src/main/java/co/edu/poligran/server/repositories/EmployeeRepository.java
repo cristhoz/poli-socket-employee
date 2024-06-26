@@ -5,18 +5,13 @@ import co.edu.poligran.domain.Employee;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class EmployeeRepository {
     private final Connection connection;
 
-    private final DateTimeFormatter dateTimeFormatter;
-
     public EmployeeRepository(Connection connection) {
         this.connection = connection;
-        this.dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     }
 
     public void save(Employee employee) {
@@ -67,5 +62,22 @@ public class EmployeeRepository {
         }
 
         return employees;
+    }
+
+    public void update(Employee employee) {
+        String query = """
+            UPDATE employees
+            SET job_title = ?, salary = ?, updated_at = now()
+            WHERE id = ?
+        """;
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, employee.getJobTitle());
+            statement.setInt(2, employee.getSalary());
+            statement.setInt(3, employee.getId());
+            statement.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Error saving employee: " + e.getMessage());
+        }
     }
 }
